@@ -1,0 +1,58 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch: Linux-x86-64
+            cmake_args: -DPRISMA_BUILD_TESTS=ON
+          - os: windows-2022
+            arch: Win64
+            cmake_args: -DPRISMA_BUILD_TESTS=OFF
+          - os: macos-14
+            arch: MacOS
+            cmake_args: -DPRISMA_BUILD_TESTS=OFF "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libexpat1-dev python3-numpy
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_args }}
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Test
+        if: runner.os == 'Linux'
+        run: ctest --test-dir build --output-on-failure
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PrismaFX-${{ matrix.arch }}
+          path: build/bundle/PrismaFX.ofx.bundle
+
+  # One bundle holding every platform's binary, as OFX bundles allow.
+  package:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: PrismaFX-*
+          path: parts
+      - name: Merge bundles
+        run: |
+          mkdir -p PrismaFX.ofx.bundle
+          for d in parts/*/; do cp -R "$d"/. PrismaFX.ofx.bundle/; done
+          find PrismaFX.ofx.bundle -type f
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PrismaFX.ofx.bundle
+          path: PrismaFX.ofx.bundle
