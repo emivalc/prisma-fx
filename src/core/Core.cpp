@@ -227,4 +227,46 @@ RGBA bokehGather(const Image& src, float px, float py, float radius, const Bokeh
     return acc * (1 / k.total);
 }
 
+RGBA combineGenerated(const RGBA& base, const RGBA& gen, int mode, float opacity) {
+    RGBA out;
+    switch (mode) {
+        case 1: {  // Screen
+            auto sc = [](float a, float b) { return a + b - a * std::min(1.f, b); };
+            out = {sc(base.r, gen.r), sc(base.g, gen.g), sc(base.b, gen.b), std::min(1.f, base.a + gen.a)};
+            break;
+        }
+        case 2:  // Add
+            out = {base.r + gen.r, base.g + gen.g, base.b + gen.b, std::min(1.f, base.a + gen.a)};
+            break;
+        case 3: {  // Multiply: transparent parts of the generated image leave the clip alone
+            auto mu = [&](float b, float g) { return b * (g + 1 - gen.a); };
+            out = {mu(base.r, gen.r), mu(base.g, gen.g), mu(base.b, gen.b), base.a};
+            break;
+        }
+        case 4:  // Replace
+            out = gen;
+            break;
+        default:  // Over
+            out = gen + base * (1 - gen.a);
+            break;
+    }
+    return base + (out - base) * opacity;
+}
+
+float fbm(float x, float y, float t, int octaves, float gain, uint32_t seed) {
+    float z0 = std::floor(t), tz = t - z0;
+    tz = tz * tz * (3 - 2 * tz);
+    auto zi = uint32_t(int(z0) & 0x7fffffff);
+    float sum = 0, amp = 1, norm = 0, f = 1;
+    for (int o = 0; o < std::max(1, octaves); ++o) {
+        auto s = seed * 31u + uint32_t(o) * 977u;
+        float n = mix(valueNoise(x * f, y * f, zi, s), valueNoise(x * f, y * f, zi + 1, s), tz);
+        sum += n * amp;
+        norm += amp;
+        amp *= gain;
+        f *= 2.0f;
+    }
+    return sum / norm;
+}
+
 }  // namespace prisma

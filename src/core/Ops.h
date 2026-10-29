@@ -97,4 +97,16 @@ BokehKernel makeBokehKernel(int blades, float rotationDeg, int samplesPerSide);
 RGBA bokehGather(const Image& src, float px, float py, float radius, const BokehKernel& k, float boost,
                  float threshold, const Rect& frame);
 
+// Generators: how the generated image (premultiplied) goes onto the clip.
+inline const std::vector<std::string>& combineOptions() {
+    static const std::vector<std::string> o{"Over", "Screen", "Add", "Multiply", "Replace"};
+    return o;
+}
+RGBA combineGenerated(const RGBA& base, const RGBA& gen, int mode, float opacity);
+
+// Fractal value noise in [0, 1]: octaves of valueNoise, each at twice the
+// frequency and `gain` times the amplitude. t blends smoothly between
+// integer noise layers, for animation.
+float fbm(float x, float y, float t, int octaves, float gain, uint32_t seed);
+
 }  // namespace prisma

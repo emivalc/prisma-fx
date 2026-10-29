@@ -45,12 +45,13 @@ Catálogo de efectos al estilo de Sapphire y de las suites de Red Giant (Univers
 - [x] **Streaks**: glow direccional tipo flare anamórfico (ref.: S_GlowEdges, Universe Glow)
 - [x] **Lux**: luz puntual o foco visible en neblina, que el propio clip puede tapar (ref.: Trapcode Lux)
 
-## Tanda 4: generadores
-- [ ] **Clouds / Fractal Noise** (ref.: S_Clouds)
-- [ ] **Aurora** (ref.: S_Aurora)
-- [ ] **Zap / Lightning** con puntos animables (ref.: S_Zap, Universe Electrify)
-- [ ] **Gradients y Grid** (ref.: S_Gradient, S_Grid)
-- [ ] **Stars / Sparkles**
+### Tanda 4: generadores
+- [x] **Clouds**: ruido fractal animado entre dos colores (ref.: S_Clouds, Fractal Noise)
+- [x] **Aurora**: cortinas de aurora boreal animadas (ref.: S_Aurora)
+- [x] **Lightning**: rayo eléctrico entre dos puntos con ramas, núcleo y glow (ref.: S_Zap, Universe Electrify)
+- [x] **Gradient**: lineal, radial, cónico y cuatro esquinas (ref.: S_Gradient, S_Ramp)
+- [x] **Grid**: rejilla girable con puntos en los cruces (ref.: S_Grid)
+- [x] **Sparkles**: campo de estrellas que titilan (ref.: S_Sparkles)
 
 ## Tanda 5: estilo y retro
 - [ ] **Mosaic / Pixelate** y **Tile Scramble** (ref.: S_Mosaic, S_TileScramble)
