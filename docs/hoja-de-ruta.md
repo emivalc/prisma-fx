@@ -53,12 +53,17 @@ Catálogo de efectos al estilo de Sapphire y de las suites de Red Giant (Univers
 - [x] **Grid**: rejilla girable con puntos en los cruces (ref.: S_Grid)
 - [x] **Sparkles**: campo de estrellas que titilan (ref.: S_Sparkles)
 
-## Tanda 5: estilo y retro
-- [ ] **Mosaic / Pixelate** y **Tile Scramble** (ref.: S_Mosaic, S_TileScramble)
-- [ ] **CRT / Retrograde** con curvatura y máscara de fósforo (ref.: Universe Retrograde)
-- [ ] **ASCII / Text Mosaic**
-- [ ] **Feedback / Echo** temporal (ref.: S_Feedback, S_Trails; necesita leer otros fotogramas)
-- [ ] **Warp Bubble / Ripple / Swirl** (ref.: S_WarpBubble, S_Swirl)
+### Tanda 5: retro y estilo
+- [x] **Mosaic**: pixelado en cuadrados o hexágonos (ref.: S_Mosaic, Universe Pixelate)
+- [x] **Tile Scramble**: baraja teselas de la imagen (ref.: S_TileScramble)
+- [x] **ASCII**: la imagen redibujada con caracteres según el brillo (ref.: Universe ASCII)
+- [x] **CRT**: tubo de televisión con curvatura, máscara de fósforo y scanlines (ref.: Universe Retrograde, S_TVDamage)
+- [x] **Ripple**: ondas concéntricas tipo gota en el agua (ref.: S_Ripple)
+- [x] **Swirl**: remolino alrededor de un punto (ref.: S_Swirl)
+- [x] **Bulge**: burbuja que amplía o pellizca (ref.: S_WarpBubble)
+
+## Pendiente: efectos temporales
+- [ ] **Feedback / Echo / Trails** (ref.: S_Feedback, S_Trails, Universe Echo): necesitan leer fotogramas anteriores, así que antes hay que ampliar el puente OFX para pedir el clip en otros tiempos (`clipGetImage` con tiempo distinto y `getFramesNeeded`).
 
 ## Transiciones (contexto OFX "Transition")
 - [ ] Soporte del contexto Transition en `src/ofx/OfxPlugin.cpp`

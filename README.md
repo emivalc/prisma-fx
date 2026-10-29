@@ -5,7 +5,7 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 
 ![Muestras](docs/muestras.png)
 
-## Efectos incluidos (39)
+## Efectos incluidos (46)
 
 | Efecto | Menú | Qué hace |
 |---|---|---|
@@ -27,6 +27,9 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 | **Kaleidoscope** | Prisma FX / Distort | Caleidoscopio de N segmentos o espejo simple. |
 | **Shake** | Prisma FX / Distort | Temblor de cámara con rotación, zoom y desenfoque de movimiento. |
 | **Warp** | Prisma FX / Distort | Distorsión orgánica con ruido animado. |
+| **Ripple** | Prisma FX / Distort | Ondas concéntricas tipo gota en el agua, animadas. |
+| **Swirl** | Prisma FX / Distort | Remolino alrededor de un punto. |
+| **Bulge** | Prisma FX / Distort | Burbuja que amplía, o pellizca con valores negativos. |
 | **Prism** | Prisma FX / Stylize | Aberración cromática espectral, radial (tipo lente) o lineal. |
 | **Film Grain** | Prisma FX / Stylize | Grano de película animado. Su tamaño no cambia con la resolución de previsualización. |
 | **Glitch** | Prisma FX / Stylize | Daño digital: franjas desplazadas, bloques corruptos, separación RGB y scanlines. |
@@ -48,6 +51,10 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 | **Gradient** | Prisma FX / Generate | Degradados lineal, radial, cónico o de cuatro esquinas. |
 | **Grid** | Prisma FX / Generate | Rejilla girable de líneas, con puntos opcionales en los cruces. |
 | **Sparkles** | Prisma FX / Generate | Campo de estrellas de cuatro puntas que titilan. |
+| **Mosaic** | Prisma FX / Retro | Pixelado en cuadrados o hexágonos, con separación opcional. |
+| **Tile Scramble** | Prisma FX / Retro | Baraja teselas de la imagen cada pocos fotogramas. |
+| **ASCII** | Prisma FX / Retro | Redibuja la imagen con caracteres elegidos por brillo. |
+| **CRT** | Prisma FX / Retro | Tubo de televisión: curvatura, máscara de fósforo, scanlines y viñeta. |
 
 Los generadores tienen un modo **Combine** (Over, Screen, Add, Multiply, Replace) y opacidad para mezclarse con el clip. Todos trabajan en 8, 16 y 32 bits (float), por tiles y a cualquier escala de render (proxy).
 
