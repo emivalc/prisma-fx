@@ -38,12 +38,12 @@ Catálogo de efectos al estilo de Sapphire y de las suites de Red Giant (Univers
 - [x] **Sharpen**: unsharp mask con umbral y modo solo luma (ref.: S_Sharpen)
 - [x] **Mojo**: look teal & orange que protege la piel (ref.: Magic Bullet Mojo)
 
-## Tanda 3: luz y desenfoque avanzados
-- [ ] **Defocus / Bokeh** con formas de diafragma (ref.: S_Blur con bokeh, Universe Bokeh Blur)
-- [ ] **Glow Rings / Aura** (ref.: S_GlowRings, S_GlowAura)
-- [ ] **Directional Glow / Streaks** (ref.: S_GlowEdges, Universe Glow)
-- [ ] **Lux**: luz volumétrica desde un punto (ref.: Trapcode Lux)
-- [ ] **Tilt Shift** (ref.: Universe Tilt Shift)
+### Tanda 3: luz y desenfoque avanzados
+- [x] **Defocus**: desenfoque de lente con diafragma redondo o poligonal y bokeh en las luces (ref.: S_Blur bokeh, Universe Bokeh Blur)
+- [x] **Tilt Shift**: banda enfocada con desenfoque progresivo, efecto miniatura (ref.: Universe Tilt Shift)
+- [x] **Glow Rings**: anillos de luz alrededor de los brillos, con espectro (ref.: S_GlowRings)
+- [x] **Streaks**: glow direccional tipo flare anamórfico (ref.: S_GlowEdges, Universe Glow)
+- [x] **Lux**: luz puntual o foco visible en neblina, que el propio clip puede tapar (ref.: Trapcode Lux)
 
 ## Tanda 4: generadores
 - [ ] **Clouds / Fractal Noise** (ref.: S_Clouds)
@@ -66,6 +66,11 @@ Catálogo de efectos al estilo de Sapphire y de las suites de Red Giant (Univers
 ## Fuera de alcance por ahora
 - Partículas 3D (Trapcode Particular, Form) y trazos 3D (3D Stroke): necesitan cámara 3D y escena, mejor como proyecto aparte.
 - Denoiser con análisis temporal (Magic Bullet Denoiser).
+
+## Port a After Effects
+- [ ] Segundo puente `src/ae/` con el SDK de After Effects (descarga aparte: su licencia no permite incluirlo en el repo). Reutiliza los efectos tal cual: parámetros, 8/16/32 bits (SmartFX) y regiones de render.
+- [ ] Recursos PiPL por efecto, generados desde `EffectInfo`.
+- [ ] CI: `.aex` para Windows y `.plugin` para macOS cuando el SDK esté disponible como secreto del repositorio.
 
 ## Infraestructura
 - [ ] Render por GPU (OpenCL/Metal/CUDA a través de las extensiones GPU de OFX) para los efectos pesados (Rays, Edge Rays, Defocus).

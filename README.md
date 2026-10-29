@@ -5,7 +5,7 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 
 ![Muestras](docs/muestras.png)
 
-## Efectos incluidos (28)
+## Efectos incluidos (33)
 
 | Efecto | Menú | Qué hace |
 |---|---|---|
@@ -15,9 +15,14 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 | **Lens Flare** | Prisma FX / Light | Flare procedural con halo, streak anamórfico y fantasmas; punto de luz animable. |
 | **Edge Rays** | Prisma FX / Light | Rayos que salen de los bordes del alfa o de la luma. |
 | **Light Leaks** | Prisma FX / Light | Fugas de luz orgánicas y animadas, con dos colores. |
+| **Glow Rings** | Prisma FX / Light | Anillos de luz alrededor de los brillos, con separación de espectro. |
+| **Streaks** | Prisma FX / Light | Glow direccional: los brillos se estiran en líneas, como un flare anamórfico. |
+| **Lux** | Prisma FX / Light | Luz puntual o foco visible en neblina, que el propio clip puede tapar. |
 | **Blur** | Prisma FX / Blur | Desenfoque gaussiano con aspecto y ángulo. |
 | **Zoom Blur** | Prisma FX / Blur | Desenfoque radial de zoom desde un centro. |
 | **Spin Blur** | Prisma FX / Blur | Desenfoque de giro alrededor de un centro. |
+| **Defocus** | Prisma FX / Blur | Desenfoque de lente con diafragma redondo o poligonal; las luces se abren en bokeh. |
+| **Tilt Shift** | Prisma FX / Blur | Banda enfocada y desenfoque progresivo alrededor: efecto miniatura. |
 | **Lens Distort** | Prisma FX / Distort | Distorsión de barril y cojín. |
 | **Kaleidoscope** | Prisma FX / Distort | Caleidoscopio de N segmentos o espejo simple. |
 | **Shake** | Prisma FX / Distort | Temblor de cámara con rotación, zoom y desenfoque de movimiento. |

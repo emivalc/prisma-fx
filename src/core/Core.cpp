@@ -191,4 +191,40 @@ void blur2D(const Image& in, Image& out, const Rect& outRect, float sigma, const
     lineGaussian(pass, out, outRect, sigma, 90, clampTo);
 }
 
+BokehKernel makeBokehKernel(int blades, float rotationDeg, int n) {
+    BokehKernel k;
+    n = std::max(2, n);
+    const float pi = 3.14159265f, rot = rotationDeg * pi / 180.0f;
+    float edge = 1.5f / float(n);  // soften over about one sample spacing
+    for (int j = -n; j <= n; ++j)
+        for (int i = -n; i <= n; ++i) {
+            float x = float(i) / float(n), y = float(j) / float(n);
+            float r = std::sqrt(x * x + y * y);
+            float limit = 1;
+            if (blades >= 3 && r > 0) {
+                float seg = 2 * pi / float(blades);
+                float a = std::fmod(std::atan2(y, x) - rot + 4 * pi, seg) - seg * 0.5f;
+                limit = std::cos(seg * 0.5f) / std::cos(a);
+            }
+            float w = 1 - smoothstep(limit - edge, limit + edge * 0.5f, r);
+            if (w <= 0) continue;
+            k.dx.push_back(x);
+            k.dy.push_back(y);
+            k.w.push_back(w);
+            k.total += w;
+        }
+    return k;
+}
+
+RGBA bokehGather(const Image& src, float px, float py, float radius, const BokehKernel& k, float boost,
+                 float threshold, const Rect& frame) {
+    RGBA acc;
+    for (size_t s = 0; s < k.w.size(); ++s) {
+        RGBA c = sampleClamped(src, px + k.dx[s] * radius, py + k.dy[s] * radius, frame);
+        float g = 1 + boost * smoothstep(threshold, threshold + 0.3f, c.luma());
+        acc += RGBA{c.r * g, c.g * g, c.b * g, c.a} * k.w[s];
+    }
+    return acc * (1 / k.total);
+}
+
 }  // namespace prisma
