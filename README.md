@@ -5,7 +5,7 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 
 ![Muestras](docs/muestras.png)
 
-## Efectos incluidos (33)
+## Efectos incluidos (39)
 
 | Efecto | Menú | Qué hace |
 |---|---|---|
@@ -42,8 +42,14 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 | **Posterize** | Prisma FX / Color | Posterizar en bandas, umbral a dos colores o solarizar. |
 | **Skin Smooth** | Prisma FX / Color | Suavizado que conserva los bordes, limitado a tonos de piel. |
 | **Mojo** | Prisma FX / Color | Look teal & orange que protege la piel. |
+| **Clouds** | Prisma FX / Generate | Ruido fractal animado: nubes, humo, niebla o texturas. |
+| **Aurora** | Prisma FX / Generate | Cortinas de aurora boreal que ondulan con el tiempo. |
+| **Lightning** | Prisma FX / Generate | Rayo eléctrico entre dos puntos, con ramas, núcleo y glow. |
+| **Gradient** | Prisma FX / Generate | Degradados lineal, radial, cónico o de cuatro esquinas. |
+| **Grid** | Prisma FX / Generate | Rejilla girable de líneas, con puntos opcionales en los cruces. |
+| **Sparkles** | Prisma FX / Generate | Campo de estrellas de cuatro puntas que titilan. |
 
-Todos trabajan en 8, 16 y 32 bits (float), por tiles y a cualquier escala de render (proxy).
+Los generadores tienen un modo **Combine** (Over, Screen, Add, Multiply, Replace) y opacidad para mezclarse con el clip. Todos trabajan en 8, 16 y 32 bits (float), por tiles y a cualquier escala de render (proxy).
 
 ## Instalar
 
