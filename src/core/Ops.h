@@ -83,4 +83,18 @@ inline float skinMask(float r, float g, float b) {
     return (1 - smoothstep(0.6f, 1.2f, d)) * smoothstep(0.05f, 0.15f, y);
 }
 
+// Lens bokeh: sample offsets inside a unit iris (a circle, or a polygon
+// with 3+ blades), with soft-edged weights. Scale the offsets by the blur
+// radius in pixels when gathering.
+struct BokehKernel {
+    std::vector<float> dx, dy, w;
+    float total = 0;
+};
+BokehKernel makeBokehKernel(int blades, float rotationDeg, int samplesPerSide);
+
+// Averages src over the iris of the given radius around (px, py), clamped to
+// frame. Highlights above threshold are boosted so they bloom into discs.
+RGBA bokehGather(const Image& src, float px, float py, float radius, const BokehKernel& k, float boost,
+                 float threshold, const Rect& frame);
+
 }  // namespace prisma
