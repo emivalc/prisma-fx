@@ -66,8 +66,14 @@ Catálogo de efectos al estilo de Sapphire y de las suites de Red Giant (Univers
 - [ ] **Feedback / Echo / Trails** (ref.: S_Feedback, S_Trails, Universe Echo): necesitan leer fotogramas anteriores, así que antes hay que ampliar el puente OFX para pedir el clip en otros tiempos (`clipGetImage` con tiempo distinto y `getFramesNeeded`).
 
 ## Transiciones (contexto OFX "Transition")
-- [ ] Soporte del contexto Transition en `src/ofx/OfxPlugin.cpp`
-- [ ] Dissolve con glow, Swish Pan, Glitch, Flash, Light Leak, Zoom (ref.: S_DissolveGlow, S_Swish, Universe Transitions)
+- [x] Soporte del contexto Transition en `src/ofx/OfxPlugin.cpp` (dos clips y parámetro Progress; en General el segundo clip es opcional)
+- [x] Glow Dissolve (ref.: S_DissolveGlow)
+- [x] Swish Pan (ref.: S_Swish, Universe Swish Pan)
+- [x] Glitch Transition (ref.: Universe Glitch Transition)
+- [x] Flash (ref.: S_DissolveFlash, Universe Flash)
+- [x] Zoom Transition (ref.: S_DissolveZoom, Universe Zoom)
+- [x] Light Leak Transition (ref.: Universe Light Leak Transition)
+- [x] Wipe lineal, iris, reloj y persianas (ref.: S_WipeClock, S_WipeIris, S_WipeBlinds)
 
 ## Fuera de alcance por ahora
 - Partículas 3D (Trapcode Particular, Form) y trazos 3D (3D Stroke): necesitan cámara 3D y escena, mejor como proyecto aparte.

@@ -5,7 +5,7 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 
 ![Muestras](docs/muestras.png)
 
-## Efectos incluidos (46)
+## Efectos incluidos (53)
 
 | Efecto | Menú | Qué hace |
 |---|---|---|
@@ -55,6 +55,15 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 | **Tile Scramble** | Prisma FX / Retro | Baraja teselas de la imagen cada pocos fotogramas. |
 | **ASCII** | Prisma FX / Retro | Redibuja la imagen con caracteres elegidos por brillo. |
 | **CRT** | Prisma FX / Retro | Tubo de televisión: curvatura, máscara de fósforo, scanlines y viñeta. |
+| **Glow Dissolve** | Prisma FX / Transitions | Fundido en el que las luces florecen en un glow que culmina a mitad. |
+| **Swish Pan** | Prisma FX / Transitions | Barrido rápido de cámara de un clip al otro, con desenfoque de movimiento. |
+| **Glitch Transition** | Prisma FX / Transitions | Corte digital: bloques que cambian, filas que se rasgan y separación RGB. |
+| **Flash** | Prisma FX / Transitions | Paso por un color o por un fogonazo de exposición en el corte. |
+| **Zoom Transition** | Prisma FX / Transitions | Zoom hacia el primer clip y desde el segundo, con desenfoque radial. |
+| **Light Leak Transition** | Prisma FX / Transitions | Una fuga de luz barre el encuadre y deja ver el clip siguiente. |
+| **Wipe** | Prisma FX / Transitions | Cortinilla lineal, iris, reloj o persianas, con borde suave y color. |
+
+Las transiciones usan el contexto OFX **Transition**: dos clips y un parámetro **Progress** de 0 a 1 que se anima en la línea de tiempo. En hosts que no lo ofrecen aparecen como efecto con un segundo clip **To** opcional.
 
 Los generadores tienen un modo **Combine** (Over, Screen, Add, Multiply, Replace) y opacidad para mezclarse con el clip. Todos trabajan en 8, 16 y 32 bits (float), por tiles y a cualquier escala de render (proxy).
 
