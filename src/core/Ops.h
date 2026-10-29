@@ -3,6 +3,7 @@
 // Building blocks shared by effects: threading, blurs, noise, blending.
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -22,6 +23,23 @@ void gaussianBlur(const Image& in, Image& out, float sigma);
 
 // Same, but only along one direction (degrees, 0 = horizontal).
 void directionalBlur(const Image& in, Image& out, float length, float angleDeg);
+
+// Gaussian blur along one direction (degrees, 0 = horizontal), written over
+// outRect only. sigma is in pixels at the current render scale. With a frame,
+// samples are clamped to it (edges repeat); without, outside is transparent.
+void lineGaussian(const Image& in, Image& out, const Rect& outRect, float sigma, float angleDeg,
+                  const Rect* clampTo = nullptr);
+
+// Bilinear sample with the position clamped inside frame, so edges repeat
+// instead of fading to black.
+inline RGBA sampleClamped(const Image& img, float x, float y, const Rect& frame) {
+    x = std::min(std::max(x, frame.x1 + 0.5f), frame.x2 - 0.5f);
+    y = std::min(std::max(y, frame.y1 + 0.5f), frame.y2 - 0.5f);
+    return img.sample(x, y);
+}
+
+// Smooth 1D noise in [-1, 1] that varies continuously with t (e.g. time).
+float noise1(float t, uint32_t seed);
 
 // Deterministic hash noise in [0, 1).
 inline float hash01(uint32_t x, uint32_t y, uint32_t z, uint32_t seed) {

@@ -1,20 +1,35 @@
 # Prisma FX
 
 Pack de efectos open source (licencia BSD-3) para cualquier programa compatible con **OpenFX**: Autograph, DaVinci Resolve/Fusion, Nuke, Natron, Vegas, Flame…
-La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerciales como Sapphire o Universe, sin depender de Adobe.
+La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerciales como Sapphire o Universe, sin depender de Adobe. El plan completo, con la equivalencia de cada efecto, está en [docs/hoja-de-ruta.md](docs/hoja-de-ruta.md).
 
 ![Muestras](docs/muestras.png)
 
-## Efectos incluidos (v0.1)
+## Efectos incluidos (21)
 
 | Efecto | Menú | Qué hace |
 |---|---|---|
-| **Glow** | Prisma FX / Light | Bloom suave a varias escalas a partir de las zonas brillantes. Umbral, anchura, caída, tinte, saturación y modo de mezcla. |
+| **Glow** | Prisma FX / Light | Bloom suave a varias escalas a partir de las zonas brillantes. |
 | **Rays** | Prisma FX / Light | Rayos volumétricos que salen de las zonas brillantes desde un punto central. |
+| **Glint** | Prisma FX / Light | Destellos en estrella sobre los brillos, como un filtro de cruz. |
+| **Lens Flare** | Prisma FX / Light | Flare procedural con halo, streak anamórfico y fantasmas; punto de luz animable. |
+| **Edge Rays** | Prisma FX / Light | Rayos que salen de los bordes del alfa o de la luma. |
+| **Light Leaks** | Prisma FX / Light | Fugas de luz orgánicas y animadas, con dos colores. |
+| **Blur** | Prisma FX / Blur | Desenfoque gaussiano con aspecto y ángulo. |
+| **Zoom Blur** | Prisma FX / Blur | Desenfoque radial de zoom desde un centro. |
+| **Spin Blur** | Prisma FX / Blur | Desenfoque de giro alrededor de un centro. |
+| **Lens Distort** | Prisma FX / Distort | Distorsión de barril y cojín. |
+| **Kaleidoscope** | Prisma FX / Distort | Caleidoscopio de N segmentos o espejo simple. |
+| **Shake** | Prisma FX / Distort | Temblor de cámara con rotación, zoom y desenfoque de movimiento. |
+| **Warp** | Prisma FX / Distort | Distorsión orgánica con ruido animado. |
 | **Prism** | Prisma FX / Stylize | Aberración cromática espectral, radial (tipo lente) o lineal. |
-| **Film Grain** | Prisma FX / Stylize | Grano de película animado, con más presencia en los tonos medios. Su tamaño no cambia con la resolución de previsualización. |
-| **Vignette** | Prisma FX / Stylize | Viñeta con centro móvil. Es también el ejemplo de la guía para crear efectos. |
+| **Film Grain** | Prisma FX / Stylize | Grano de película animado. Su tamaño no cambia con la resolución de previsualización. |
 | **Glitch** | Prisma FX / Stylize | Daño digital: franjas desplazadas, bloques corruptos, separación RGB y scanlines. |
+| **VHS** | Prisma FX / Stylize | Cinta gastada: jitter, banda de tracking, sangrado de color, ruido y scanlines. |
+| **Halftone** | Prisma FX / Stylize | Trama de puntos de imprenta, en una tinta o en color. |
+| **Edge Detect** | Prisma FX / Stylize | Bordes, dibujo a tinta o look cartoon. |
+| **Vignette** | Prisma FX / Stylize | Viñeta con centro móvil. Es también el ejemplo de la guía para crear efectos. |
+| **Color Grade** | Prisma FX / Color | Exposición, balance de blancos, lift/gamma/gain, contraste, saturación y bleach bypass. |
 
 Todos trabajan en 8, 16 y 32 bits (float), por tiles y a cualquier escala de render (proxy).
 
@@ -67,4 +82,4 @@ tests/         Imagen de prueba y suite de tests
 
 ## Licencia
 
-BSD-3-Clause. Las cabeceras de OpenFX en `external/openfx` son © OpenFX contributors, también con licencia BSD-3. Sapphire, Universe y After Effects son marcas de sus respectivos dueños. Este proyecto no tiene relación con ellos ni usa su código.
+BSD-3-Clause. Las cabeceras de OpenFX en `external/openfx` son © OpenFX contributors, también con licencia BSD-3. Sapphire, Red Giant, Universe, Trapcode, Magic Bullet y After Effects son marcas de sus respectivos dueños. Este proyecto no tiene relación con ellos ni usa su código.
