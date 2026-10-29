@@ -5,7 +5,7 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 
 ![Muestras](docs/muestras.png)
 
-## Efectos incluidos (21)
+## Efectos incluidos (28)
 
 | Efecto | Menú | Qué hace |
 |---|---|---|
@@ -30,6 +30,13 @@ La idea es ir recreando, uno a uno, el tipo de efectos que ofrecen suites comerc
 | **Edge Detect** | Prisma FX / Stylize | Bordes, dibujo a tinta o look cartoon. |
 | **Vignette** | Prisma FX / Stylize | Viñeta con centro móvil. Es también el ejemplo de la guía para crear efectos. |
 | **Color Grade** | Prisma FX / Color | Exposición, balance de blancos, lift/gamma/gain, contraste, saturación y bleach bypass. |
+| **Sharpen** | Prisma FX / Blur | Unsharp mask con umbral y modo solo luma. |
+| **Film Effect** | Prisma FX / Stylize | Película antigua: gate weave, parpadeo, polvo, rayas, fade y tinte. |
+| **Film Look** | Prisma FX / Color | Curva de película, halation alrededor de las luces y fade. |
+| **Gradient Map** | Prisma FX / Color | Duotono y tritono: mapea los tonos a dos o tres colores. |
+| **Posterize** | Prisma FX / Color | Posterizar en bandas, umbral a dos colores o solarizar. |
+| **Skin Smooth** | Prisma FX / Color | Suavizado que conserva los bordes, limitado a tonos de piel. |
+| **Mojo** | Prisma FX / Color | Look teal & orange que protege la piel. |
 
 Todos trabajan en 8, 16 y 32 bits (float), por tiles y a cualquier escala de render (proxy).
 
