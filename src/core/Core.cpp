@@ -184,4 +184,11 @@ RGBA blendLight(const RGBA& base, const RGBA& light, Blend mode) {
     }
 }
 
+void blur2D(const Image& in, Image& out, const Rect& outRect, float sigma, const Rect* clampTo) {
+    Image pass;
+    Rect mid = outRect.expand(int(std::ceil(3 * sigma)) + 2).intersect(in.bounds());
+    lineGaussian(in, pass, mid, sigma, 0, clampTo);
+    lineGaussian(pass, out, outRect, sigma, 90, clampTo);
+}
+
 }  // namespace prisma

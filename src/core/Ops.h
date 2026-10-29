@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -29,6 +30,10 @@ void directionalBlur(const Image& in, Image& out, float length, float angleDeg);
 // samples are clamped to it (edges repeat); without, outside is transparent.
 void lineGaussian(const Image& in, Image& out, const Rect& outRect, float sigma, float angleDeg,
                   const Rect* clampTo = nullptr);
+
+// Round gaussian (two lineGaussian passes) written over outRect only. Reads
+// up to 3 * sigma + 2 pixels around it; clampTo works as in lineGaussian.
+void blur2D(const Image& in, Image& out, const Rect& outRect, float sigma, const Rect* clampTo = nullptr);
 
 // Bilinear sample with the position clamped inside frame, so edges repeat
 // instead of fading to black.
@@ -67,5 +72,15 @@ inline const std::vector<std::string>& blendOptions() {
     return o;
 }
 RGBA blendLight(const RGBA& base, const RGBA& light, Blend mode);
+
+// How much an unpremultiplied colour looks like skin, 0..1 (a soft region
+// in the YCbCr chroma plane that covers most skin tones).
+inline float skinMask(float r, float g, float b) {
+    float cb = -0.1687f * r - 0.3313f * g + 0.5f * b, cr = 0.5f * r - 0.4187f * g - 0.0813f * b;
+    float du = (cb + 0.09f) / 0.12f, dv = (cr - 0.13f) / 0.11f;
+    float d = std::sqrt(du * du + dv * dv);
+    float y = 0.299f * r + 0.587f * g + 0.114f * b;
+    return (1 - smoothstep(0.6f, 1.2f, d)) * smoothstep(0.05f, 0.15f, y);
+}
 
 }  // namespace prisma

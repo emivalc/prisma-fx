@@ -29,14 +29,14 @@ Catálogo de efectos al estilo de Sapphire y de las suites de Red Giant (Univers
 - [x] **VHS**: jitter, banda de tracking, sangrado de color y ruido (ref.: S_TVDamage, Universe VHS)
 - [x] **Color Grade**: exposición, balance, lift/gamma/gain, contraste, saturación y bleach bypass (ref.: Magic Bullet Looks/Colorista)
 
-## Tanda 2: película y color
-- [ ] **Film Effect**: gate weave, parpadeo, polvo, pelos y rayas (ref.: S_FilmEffect, Magic Bullet Film)
-- [ ] **Film Stock / Look**: curva de película y halation (ref.: Magic Bullet Film)
-- [ ] **Duotone / Tritone / Gradient Map** (ref.: S_Duotone, S_Tritone)
-- [ ] **Posterize, Threshold, Solarize** (ref.: S_Posterize, S_Threshold)
-- [ ] **Skin Smooth**: suavizado que conserva bordes (ref.: Magic Bullet Cosmo)
-- [ ] **Sharpen** y **Unsharp** (ref.: S_Sharpen)
-- [ ] **Mojo**: separación cálido/frío de tonos de piel (ref.: Magic Bullet Mojo)
+### Tanda 2: película y color
+- [x] **Film Effect**: gate weave, parpadeo, polvo, rayas, fade y tinte (ref.: S_FilmEffect, Magic Bullet Film)
+- [x] **Film Look**: curva de película, halation y fade (ref.: Magic Bullet Film)
+- [x] **Gradient Map**: duotono y tritono (ref.: S_Duotone, S_Tritone)
+- [x] **Posterize**: posterizar, umbral a dos colores y solarizar (ref.: S_Posterize, S_Threshold, S_Solarize)
+- [x] **Skin Smooth**: suavizado bilateral limitado a tonos de piel (ref.: Magic Bullet Cosmo)
+- [x] **Sharpen**: unsharp mask con umbral y modo solo luma (ref.: S_Sharpen)
+- [x] **Mojo**: look teal & orange que protege la piel (ref.: Magic Bullet Mojo)
 
 ## Tanda 3: luz y desenfoque avanzados
 - [ ] **Defocus / Bokeh** con formas de diafragma (ref.: S_Blur con bokeh, Universe Bokeh Blur)
