@@ -119,6 +119,46 @@ void directionalBlur(const Image& in, Image& out, float length, float angleDeg) 
     });
 }
 
+void lineGaussian(const Image& in, Image& out, const Rect& outRect, float sigma, float angleDeg,
+                  const Rect* clampTo) {
+    out.reset(outRect);
+    if (outRect.empty()) return;
+    float rad = angleDeg * 3.14159265f / 180.0f;
+    float dx = std::cos(rad), dy = std::sin(rad);
+    float reach = 3.0f * sigma;
+    int n = sigma < 0.3f ? 0 : std::min(96, std::max(1, int(std::ceil(reach))));
+    float step = n ? reach / float(n) : 0;
+    std::vector<float> w(size_t(n) + 1);
+    float total = 0;
+    for (int s = 0; s <= n; ++s) {
+        float t = step * float(s);
+        w[size_t(s)] = std::exp(-0.5f * t * t / std::max(1e-6f, sigma * sigma));
+        total += s ? 2 * w[size_t(s)] : w[0];
+    }
+    for (float& v : w) v /= total;
+    auto at = [&](float x, float y) { return clampTo ? sampleClamped(in, x, y, *clampTo) : in.sample(x, y); };
+    parallelFor(outRect.y1, outRect.y2, [&](int y) {
+        for (int x = outRect.x1; x < outRect.x2; ++x) {
+            float px = x + 0.5f, py = y + 0.5f;
+            if (n == 0) { out.at(x, y) = clampTo ? at(px, py) : in.get(x, y); continue; }
+            RGBA acc = at(px, py) * w[0];
+            for (int s = 1; s <= n; ++s) {
+                float t = step * float(s);
+                acc += (at(px + dx * t, py + dy * t) + at(px - dx * t, py - dy * t)) * w[size_t(s)];
+            }
+            out.at(x, y) = acc;
+        }
+    });
+}
+
+float noise1(float t, uint32_t seed) {
+    float f = std::floor(t);
+    float u = t - f;
+    u = u * u * (3 - 2 * u);
+    auto i = uint32_t(int32_t(f));
+    return mix(hash01(i, 0, 0, seed), hash01(i + 1, 0, 0, seed), u) * 2.0f - 1.0f;
+}
+
 float valueNoise(float x, float y, uint32_t z, uint32_t seed) {
     float fx = std::floor(x), fy = std::floor(y);
     int ix = int(fx), iy = int(fy);
