@@ -80,9 +80,12 @@ Catálogo de efectos al estilo de Sapphire y de las suites de Red Giant (Univers
 - Denoiser con análisis temporal (Magic Bullet Denoiser).
 
 ## Port a After Effects
-- [ ] Segundo puente `src/ae/` con el SDK de After Effects (descarga aparte: su licencia no permite incluirlo en el repo). Reutiliza los efectos tal cual: parámetros, 8/16/32 bits (SmartFX) y regiones de render.
-- [ ] Recursos PiPL por efecto, generados desde `EffectInfo`.
-- [ ] CI: `.aex` para Windows y `.plugin` para macOS cuando el SDK esté disponible como secreto del repositorio.
+- [x] Segundo puente `src/ae/` con el SDK de After Effects (descarga aparte: su licencia no permite incluirlo en el repo). Reutiliza los efectos tal cual: parámetros, 8/16/32 bits (SmartFX), render multi-frame y regiones de render. La parte independiente del SDK tiene tests (`ae_bridge_test`).
+- [x] Recursos PiPL por efecto, generados desde `EffectInfo` (`tools/aepipl`), todos en un único plugin.
+- [x] Transiciones como en AE: Transition Completion + Destination Layer.
+- [x] CI: job `ae` que saca `.aex` y `.plugin` cuando existe el secreto `AE_SDK_TOKEN` (ver [after-effects.md](after-effects.md)).
+- [ ] Primera compilación con el SDK y prueba dentro de After Effects (controles de punto a media resolución, transiciones).
+- [ ] Colores en float con `PF_ColorParamSuite1` (ahora el color del control se lee en 8 bits).
 
 ## Infraestructura
 - [ ] Render por GPU (OpenCL/Metal/CUDA a través de las extensiones GPU de OFX) para los efectos pesados (Rays, Edge Rays, Defocus).
