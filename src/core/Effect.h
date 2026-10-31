@@ -78,6 +78,9 @@ struct EffectInfo {
     std::string description;
     int versionMajor = 1, versionMinor = 0;
     std::vector<ParamSpec> params;
+    // Transitions take two clips (from and to) and a "Transition" progress
+    // parameter from 0 to 1 that the host animates.
+    bool transition = false;
 };
 
 class ParamValues {
@@ -99,6 +102,11 @@ struct RenderArgs {
     double renderScale = 1;  // multiply canonical sizes by this to get pixels
     Rect frame;              // full source frame in pixels (for centres, normalised coords)
     const ParamValues* params = nullptr;
+
+    // Transitions only: the incoming clip (src is the outgoing one), covering
+    // the same area as src, and the progress from 0 (all src) to 1 (all to).
+    const Image* to = nullptr;
+    float progress = 0;
 
     // Normalised point param -> pixel coordinates at the current render scale.
     void pointToPixels(const std::string& name, float& x, float& y) const {

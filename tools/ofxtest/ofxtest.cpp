@@ -103,6 +103,7 @@ struct Settings {
     double scale = 1.0;
     double time = 0;
     FloatImage input;
+    FloatImage input2;  // the incoming clip of a transition
 };
 static Settings gSettings;
 
@@ -317,6 +318,7 @@ public:
         p.setStringProperty(kOfxImageEffectPropSupportedComponents, kOfxImageComponentRGBA, 0);
         p.setStringProperty(kOfxImageEffectPropSupportedContexts, kOfxImageEffectContextFilter, 0);
         p.setStringProperty(kOfxImageEffectPropSupportedContexts, kOfxImageEffectContextGeneral, 1);
+        p.setStringProperty(kOfxImageEffectPropSupportedContexts, kOfxImageEffectContextTransition, 2);
         p.setStringProperty(kOfxImageEffectPropSupportedPixelDepths, kOfxBitDepthByte, 0);
         p.setStringProperty(kOfxImageEffectPropSupportedPixelDepths, kOfxBitDepthShort, 1);
         p.setStringProperty(kOfxImageEffectPropSupportedPixelDepths, kOfxBitDepthFloat, 2);
@@ -407,7 +409,8 @@ HSI::Image* ClipInstance::getImage(OfxTime, const OfxRectD*) {
     // A fresh source image cropped to the requested region of interest;
     // the plugin releases it, which deletes it.
     auto* img = new Image(*this, roi, gSettings.depth);
-    img->fillFrom(gSettings.input);
+    bool second = name_ == kOfxImageEffectTransitionSourceToClipName || name_ == "To";
+    img->fillFrom(second ? gSettings.input2 : gSettings.input);
     return img;
 }
 
@@ -418,7 +421,7 @@ HSI::Image* ClipInstance::getImage(OfxTime, const OfxRectD*) {
 static void usage() {
     fprintf(stderr,
             "usage: ofxtest --bundle-dir DIR (--list | --plugin ID --in IN.ppm [--out OUT.ppm]\n"
-            "               [--param name=v[,v...]]... [--time T] [--scale S]\n"
+            "               [--in2 IN2.ppm] [--param name=v[,v...]]... [--time T] [--scale S]\n"
             "               [--depth float|short|byte] [--tiles N] [--check-tiles])\n");
 }
 
@@ -449,7 +452,10 @@ static bool setParam(HSI::Instance& inst, const std::string& spec) {
 
 // Renders the whole frame in tiles x tiles render calls.
 static bool renderFrame(HSI::Instance& inst, int tiles, FloatImage& out) {
-    auto* src = dynamic_cast<TestHost::ClipInstance*>(inst.getClip(kOfxImageEffectSimpleSourceClipName));
+    std::vector<TestHost::ClipInstance*> inputs;
+    for (auto& [name, desc] : inst.getDescriptor().getClips())
+        if (name != kOfxImageEffectOutputClipName)
+            if (auto* c = dynamic_cast<TestHost::ClipInstance*>(inst.getClip(name))) inputs.push_back(c);
     auto* dst = dynamic_cast<TestHost::ClipInstance*>(inst.getClip(kOfxImageEffectOutputClipName));
     int W = gSettings.input.w, H = gSettings.input.h;
     double s = gSettings.scale;
@@ -469,10 +475,12 @@ static bool renderFrame(HSI::Instance& inst, int tiles, FloatImage& out) {
                 fprintf(stderr, "ofxtest: getRegionsOfInterest failed\n");
                 return false;
             }
-            OfxRectD r = rois.count(src) ? rois[src] : winCanon;
-            // Clip the RoI to the source frame, as a host would.
-            src->roi = {std::max(0, int(std::floor(r.x1 * s))), std::max(0, int(std::floor(r.y1 * s))),
-                        std::min(W, int(std::ceil(r.x2 * s))), std::min(H, int(std::ceil(r.y2 * s)))};
+            for (auto* src : inputs) {
+                OfxRectD r = rois.count(src) ? rois[src] : winCanon;
+                // Clip the RoI to the source frame, as a host would.
+                src->roi = {std::max(0, int(std::floor(r.x1 * s))), std::max(0, int(std::floor(r.y1 * s))),
+                            std::min(W, int(std::ceil(r.x2 * s))), std::min(H, int(std::ceil(r.y2 * s)))};
+            }
             OfxStatus st = inst.renderAction(gSettings.time, kOfxImageFieldNone, win, scale, true, false, false);
             if (st != kOfxStatOK) {
                 fprintf(stderr, "ofxtest: render failed with status %d\n", st);
@@ -486,7 +494,7 @@ static bool renderFrame(HSI::Instance& inst, int tiles, FloatImage& out) {
 }
 
 int main(int argc, char** argv) {
-    std::string bundleDir, pluginId, inPath, outPath;
+    std::string bundleDir, pluginId, inPath, in2Path, outPath;
     std::vector<std::string> params;
     bool list = false, checkTiles = false;
     int tiles = 1;
@@ -499,6 +507,7 @@ int main(int argc, char** argv) {
         if (a == "--bundle-dir") bundleDir = next();
         else if (a == "--plugin") pluginId = next();
         else if (a == "--in") inPath = next();
+        else if (a == "--in2") in2Path = next();
         else if (a == "--out") outPath = next();
         else if (a == "--param") params.push_back(next());
         else if (a == "--time") gSettings.time = std::atof(next().c_str());
@@ -529,7 +538,28 @@ int main(int argc, char** argv) {
         if (!plugin) { fprintf(stderr, "ofxtest: plugin %s not found\n", pluginId.c_str()); return 1; }
         if (!readPPM(inPath, gSettings.input)) { fprintf(stderr, "ofxtest: cannot read %s\n", inPath.c_str()); return 1; }
 
-        std::unique_ptr<HSI::Instance> inst(plugin->createInstance(kOfxImageEffectContextFilter, nullptr));
+        if (!in2Path.empty()) {
+            if (!readPPM(in2Path, gSettings.input2) || gSettings.input2.w != gSettings.input.w ||
+                gSettings.input2.h != gSettings.input.h) {
+                fprintf(stderr, "ofxtest: cannot read %s or its size differs\n", in2Path.c_str());
+                return 1;
+            }
+        } else {
+            // Without --in2, the incoming clip is the input mirrored with its channels rotated.
+            FloatImage& b = gSettings.input2;
+            b = gSettings.input;
+            for (int y = 0; y < b.h; ++y)
+                for (int x = 0; x < b.w; ++x) {
+                    const float* a = gSettings.input.at(b.w - 1 - x, y);
+                    float* d = b.at(x, y);
+                    d[0] = a[2]; d[1] = a[0]; d[2] = a[1];
+                }
+        }
+
+        const char* context = plugin->getContexts().count(kOfxImageEffectContextTransition)
+                                  ? kOfxImageEffectContextTransition
+                                  : kOfxImageEffectContextFilter;
+        std::unique_ptr<HSI::Instance> inst(plugin->createInstance(context, nullptr));
         if (!inst) { fprintf(stderr, "ofxtest: cannot create instance\n"); return 1; }
         for (auto& p : params)
             if (!setParam(*inst, p)) return 2;

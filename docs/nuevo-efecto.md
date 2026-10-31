@@ -69,3 +69,9 @@ No hace falta tocar CMake: cualquier `.cpp` dentro de `src/effects/` entra en el
 - **El ruido y lo aleatorio deben ser deterministas.** Usa `hash01` o `valueNoise` con coordenadas canónicas (`(x + 0.5) / renderScale`) y el fotograma, nunca `rand()`. Así cada tile y cada render salen idénticos.
 - **Los nombres de parámetros son para siempre.** Los proyectos guardados los usan. Puedes cambiar la etiqueta visible, pero no el `name`.
 - Sube `versionMinor` cuando añadas parámetros y `versionMajor` si cambias el resultado de forma incompatible.
+
+## Transiciones
+
+Una transición es un efecto con `transition = true` como último campo de `EffectInfo` (mira `src/effects/transition/Wipe.cpp`). El puente OFX la registra en el contexto **Transition** con dos clips (`SourceFrom` y `SourceTo`) y un parámetro **Progress** de 0 a 1 que el host anima. En el contexto General el segundo clip se llama `To` y es opcional.
+
+En `render`, `src` es el clip que sale, `*a.to` el que entra (cubre la misma zona que `src`, o está vacío si no hay clip conectado) y `a.progress` el avance. `ofxtest` usa como segundo clip la imagen de prueba espejada y con los canales rotados, o la que le pases con `--in2`.

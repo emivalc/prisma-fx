@@ -15,7 +15,9 @@ tiles = [("Original", Image.open(src))]
 for line in filter(None, ids):
     pid = line.split()[0]
     dst = os.path.join(tmp, pid + ".ppm")
-    subprocess.run([ofxtest, "--bundle-dir", bundle, "--plugin", pid, "--in", src, "--out", dst, "--time", "3"], check=True)
+    extra = {"Flash": ["--param", "Transition=0.3"]}.get(pid.rsplit(".", 1)[1], [])
+    subprocess.run([ofxtest, "--bundle-dir", bundle, "--plugin", pid, "--in", src, "--out", dst, "--time", "3"] + extra,
+                   check=True)
     tiles.append((pid.rsplit(".", 1)[1], Image.open(dst)))
 cols = 3
 rows = (len(tiles) + cols - 1) // cols

@@ -28,6 +28,12 @@ namespace {
 
 constexpr const char* kSource = kOfxImageEffectSimpleSourceClipName;  // "Source"
 constexpr const char* kOutput = kOfxImageEffectOutputClipName;        // "Output"
+// Transitions: in the Transition context the host names the two clips; in
+// the General context (for hosts without transitions) we use Source and To.
+constexpr const char* kFrom = kOfxImageEffectTransitionSourceFromClipName;  // "SourceFrom"
+constexpr const char* kTo = kOfxImageEffectTransitionSourceToClipName;      // "SourceTo"
+constexpr const char* kGeneralTo = "To";
+constexpr const char* kProgress = kOfxImageEffectTransitionParamName;  // "Transition"
 constexpr const char* kGroupRoot = "Prisma FX";
 constexpr size_t kMaxEffects = 128;
 
@@ -55,7 +61,8 @@ void describe(const Effect& fx, OfxImageEffectHandle handle) {
     gProp->propSetString(p, kOfxPropLabel, 0, info.label.c_str());
     gProp->propSetString(p, kOfxImageEffectPluginPropGrouping, 0, group.c_str());
     gProp->propSetString(p, kOfxPropPluginDescription, 0, info.description.c_str());
-    gProp->propSetString(p, kOfxImageEffectPropSupportedContexts, 0, kOfxImageEffectContextFilter);
+    gProp->propSetString(p, kOfxImageEffectPropSupportedContexts, 0,
+                         info.transition ? kOfxImageEffectContextTransition : kOfxImageEffectContextFilter);
     gProp->propSetString(p, kOfxImageEffectPropSupportedContexts, 1, kOfxImageEffectContextGeneral);
     gProp->propSetString(p, kOfxImageEffectPropSupportedPixelDepths, 0, kOfxBitDepthFloat);
     gProp->propSetString(p, kOfxImageEffectPropSupportedPixelDepths, 1, kOfxBitDepthShort);
@@ -69,11 +76,12 @@ void describe(const Effect& fx, OfxImageEffectHandle handle) {
     gProp->propSetInt(p, kOfxImageEffectPropSupportsMultipleClipDepths, 0, 0);
 }
 
-void defineClip(OfxImageEffectHandle handle, const char* name) {
+void defineClip(OfxImageEffectHandle handle, const char* name, bool optional = false) {
     OfxPropertySetHandle p;
     check(gFx->clipDefine(handle, name, &p));
     gProp->propSetString(p, kOfxImageEffectPropSupportedComponents, 0, kOfxImageComponentRGBA);
     gProp->propSetInt(p, kOfxImageEffectPropSupportsTiles, 0, 1);
+    if (optional) gProp->propSetInt(p, kOfxImageClipPropOptional, 0, 1);
 }
 
 void defineParam(OfxParamSetHandle set, const ParamSpec& spec) {
@@ -131,12 +139,35 @@ void defineParam(OfxParamSetHandle set, const ParamSpec& spec) {
     }
 }
 
-void describeInContext(const Effect& fx, OfxImageEffectHandle handle) {
-    defineClip(handle, kSource);
-    defineClip(handle, kOutput);
+void describeInContext(const Effect& fx, OfxImageEffectHandle handle, OfxPropertySetHandle in) {
     OfxParamSetHandle set;
     check(gFx->getParamSet(handle, &set));
+    if (fx.info().transition) {
+        char* ctx = nullptr;
+        gProp->propGetString(in, kOfxImageEffectPropContext, 0, &ctx);
+        bool transitionCtx = ctx && !strcmp(ctx, kOfxImageEffectContextTransition);
+        defineClip(handle, transitionCtx ? kFrom : kSource);
+        defineClip(handle, transitionCtx ? kTo : kGeneralTo, !transitionCtx);
+        defineClip(handle, kOutput);
+        ParamSpec progress = ParamSpec::real(kProgress, "Progress", 0.5, 0, 1, "0 shows the first clip, 1 the second.", 0, 1);
+        defineParam(set, progress);
+    } else {
+        defineClip(handle, kSource);
+        defineClip(handle, kOutput);
+    }
     for (const ParamSpec& spec : fx.info().params) defineParam(set, spec);
+}
+
+// The clips an instance reads: [0] the main source, [1] the incoming clip of
+// a transition (nullptr for ordinary effects).
+std::pair<const char*, const char*> inputClips(const Effect& fx, OfxImageEffectHandle handle) {
+    if (!fx.info().transition) return {kSource, nullptr};
+    OfxPropertySetHandle p;
+    check(gFx->getPropertySet(handle, &p));
+    char* ctx = nullptr;
+    gProp->propGetString(p, kOfxImageEffectPropContext, 0, &ctx);
+    if (ctx && !strcmp(ctx, kOfxImageEffectContextTransition)) return {kFrom, kTo};
+    return {kSource, kGeneralTo};
 }
 
 // ---------------------------------------------------------------- params
@@ -145,6 +176,13 @@ ParamValues readParams(const Effect& fx, OfxImageEffectHandle handle, double t) 
     OfxParamSetHandle set;
     check(gFx->getParamSet(handle, &set));
     ParamValues v;
+    if (fx.info().transition) {
+        OfxParamHandle ph;
+        double d = 0;
+        check(gParam->paramGetHandle(set, kProgress, &ph, nullptr));
+        check(gParam->paramGetValueAtTime(ph, t, &d));
+        v.values[kProgress] = {d};
+    }
     for (const ParamSpec& spec : fx.info().params) {
         OfxParamHandle ph;
         check(gParam->paramGetHandle(set, spec.name.c_str(), &ph, nullptr));
@@ -288,9 +326,9 @@ double clipPixelAspect(OfxImageEffectHandle handle, const char* clipName) {
     return par > 0 ? par : 1;
 }
 
-OfxRectD sourceRoD(OfxImageEffectHandle handle, double time) {
+OfxRectD sourceRoD(OfxImageEffectHandle handle, const char* clipName, double time) {
     OfxImageClipHandle clip;
-    check(gFx->clipGetHandle(handle, kSource, &clip, nullptr));
+    check(gFx->clipGetHandle(handle, clipName, &clip, nullptr));
     OfxRectD rod{0, 0, 0, 0};
     gFx->clipGetRegionOfDefinition(clip, time, &rod);
     return rod;
@@ -310,18 +348,23 @@ OfxStatus regionsOfInterest(const Effect& fx, OfxImageEffectHandle handle, OfxPr
     OfxRectD roi;
     gProp->propGetDoubleN(in, kOfxImageEffectPropRegionOfInterest, 4, &roi.x1);
 
+    auto clips = inputClips(fx, handle);
     Footprint fp = fx.footprint(readParams(fx, handle, time));
     if (fp.whole) {
-        roi = sourceRoD(handle, time);
+        roi = sourceRoD(handle, clips.first, time);
     } else if (fp.padding > 0) {
         double pad = std::ceil(fp.padding);
-        double par = clipPixelAspect(handle, kSource);
+        double par = clipPixelAspect(handle, clips.first);
         roi.x1 -= pad * par; roi.x2 += pad * par;
         roi.y1 -= pad; roi.y2 += pad;
-    } else {
+    } else if (!clips.second) {
         return kOfxStatReplyDefault;
     }
-    gProp->propSetDoubleN(out, "OfxImageClipPropRoI_Source", 4, &roi.x1);
+    for (const char* name : {clips.first, clips.second}) {
+        if (!name) continue;
+        std::string prop = std::string("OfxImageClipPropRoI_") + name;
+        gProp->propSetDoubleN(out, prop.c_str(), 4, &roi.x1);
+    }
     return kOfxStatOK;
 }
 
@@ -336,20 +379,34 @@ OfxStatus render(const Effect& fx, OfxImageEffectHandle handle, OfxPropertySetHa
 
     HostImage dstImg;
     if (!dstImg.fetch(handle, kOutput, time)) return kOfxStatFailed;
+    auto clips = inputClips(fx, handle);
     HostImage srcImg;
-    bool haveSrc = srcImg.fetch(handle, kSource, time);
+    bool haveSrc = srcImg.fetch(handle, clips.first, time);
 
     ParamValues params = readParams(fx, handle, time);
     RenderArgs args;
     args.time = time;
     args.renderScale = scale[0];
     args.params = &params;
-    args.frame = canonicalToPixels(sourceRoD(handle, time), scale[0], scale[1], clipPixelAspect(handle, kSource));
+    args.frame = canonicalToPixels(sourceRoD(handle, clips.first, time), scale[0], scale[1],
+                                   clipPixelAspect(handle, clips.first));
 
     Footprint fp = fx.footprint(params);
     Rect need = fp.whole ? args.frame : window.expand(int(std::ceil(fp.padding * scale[0])));
     Image src(haveSrc ? need.intersect(srcImg.bounds) : Rect{});
     if (haveSrc) srcImg.readInto(src);
+
+    // The incoming clip of a transition. It may be unconnected in the General
+    // context, and then reads as transparent black.
+    HostImage toImg;
+    Image to;
+    if (clips.second) {
+        bool haveTo = toImg.fetch(handle, clips.second, time);
+        to = Image(haveTo ? need.intersect(toImg.bounds) : Rect{});
+        if (haveTo) toImg.readInto(to);
+        args.to = &to;
+        args.progress = params.f(kProgress);
+    }
 
     Image dst(window);
     fx.render(src, dst, args);
@@ -372,7 +429,7 @@ OfxStatus dispatch(size_t index, const char* action, const void* rawHandle, OfxP
             return gProp && gFx && gParam ? kOfxStatOK : kOfxStatErrMissingHostFeature;
         }
         if (!strcmp(action, kOfxActionDescribe)) { describe(fx, handle); return kOfxStatOK; }
-        if (!strcmp(action, kOfxImageEffectActionDescribeInContext)) { describeInContext(fx, handle); return kOfxStatOK; }
+        if (!strcmp(action, kOfxImageEffectActionDescribeInContext)) { describeInContext(fx, handle, in); return kOfxStatOK; }
         if (!strcmp(action, kOfxImageEffectActionRender)) return render(fx, handle, in);
         if (!strcmp(action, kOfxImageEffectActionGetRegionsOfInterest)) return regionsOfInterest(fx, handle, in, out);
         if (!strcmp(action, kOfxActionCreateInstance) || !strcmp(action, kOfxActionDestroyInstance) ||
