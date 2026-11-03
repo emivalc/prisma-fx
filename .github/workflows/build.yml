@@ -38,6 +38,56 @@ jobs:
           name: PrismaFX-${{ matrix.arch }}
           path: build/bundle/PrismaFX.ofx.bundle
 
+  # After Effects plugin. Adobe's SDK cannot live in this public repo: it is
+  # read from the private repo emivalc/ae-sdk with the AE_SDK_TOKEN secret
+  # (a token with read access to it). Without the secret this job is skipped.
+  ae:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            name: Win64
+            cmake_args: ""
+          - os: macos-14
+            name: MacOS
+            cmake_args: -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+    runs-on: ${{ matrix.os }}
+    env:
+      AE_SDK_TOKEN: ${{ secrets.AE_SDK_TOKEN }}
+    steps:
+      - name: Check for the SDK
+        id: sdk
+        shell: bash
+        run: |
+          if [ -n "$AE_SDK_TOKEN" ]; then echo "have=true" >> "$GITHUB_OUTPUT"; else
+            echo "::notice::AE_SDK_TOKEN is not set; skipping the After Effects build"; fi
+      - uses: actions/checkout@v4
+        if: steps.sdk.outputs.have == 'true'
+      - uses: actions/checkout@v4
+        if: steps.sdk.outputs.have == 'true'
+        with:
+          repository: emivalc/ae-sdk
+          token: ${{ secrets.AE_SDK_TOKEN }}
+          path: ae-sdk
+      - name: Configure
+        if: steps.sdk.outputs.have == 'true'
+        shell: bash
+        run: |
+          headers=$(find "$PWD/ae-sdk" -name AE_Effect.h -path '*Headers*' | head -1)
+          [ -n "$headers" ] || { echo "AE_Effect.h not found in emivalc/ae-sdk"; exit 1; }
+          examples=$(dirname "$(dirname "$headers")")
+          echo "SDK: $examples"
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPRISMA_BUILD_TESTS=OFF "-DPRISMA_AE_SDK=$examples" ${{ matrix.cmake_args }}
+      - name: Build
+        if: steps.sdk.outputs.have == 'true'
+        run: cmake --build build --config Release --target PrismaFX_AE --parallel
+      - uses: actions/upload-artifact@v4
+        if: steps.sdk.outputs.have == 'true'
+        with:
+          name: PrismaFX-AE-${{ matrix.name }}
+          path: build/ae-plugin
+
   # One bundle holding every platform's binary, as OFX bundles allow.
   package:
     needs: build

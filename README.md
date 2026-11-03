@@ -76,6 +76,10 @@ Los generadores tienen un modo **Combine** (Over, Screen, Add, Multiply, Replace
    - **Linux:** `/usr/OFX/Plugins/`
 3. Reinicia Autograph (o el programa que uses). Los efectos aparecen en el grupo **Prisma FX**.
 
+### After Effects
+
+Prisma FX también se compila como plugin nativo de After Effects (`PrismaFX.aex` / `PrismaFX.plugin`), con los mismos efectos. Para eso hace falta el SDK de Adobe, que no se puede incluir en el repo. Tienes los pasos para compilarlo e instalarlo en [docs/after-effects.md](docs/after-effects.md).
+
 ## Compilar
 
 Hace falta CMake 3.20 o superior y un compilador de C++17. Las cabeceras de OpenFX van incluidas en `external/`.
@@ -109,8 +113,10 @@ Un efecto nuevo es un único archivo `.cpp` en `src/effects/`. Declaras sus par�
 ```
 src/core/      Imagen float, parámetros, registro de efectos y utilidades (blur, ruido, mezcla)
 src/ofx/       Puente genérico a OpenFX (el único código que habla OFX)
+src/ae/        Puente a After Effects (AeBridge sin SDK + AePlugin con el SDK)
 src/effects/   Un archivo por efecto, agrupados por categoría
 tools/ofxtest/ Host de pruebas
+tools/aepipl/  Genera los recursos PiPL de After Effects
 tests/         Imagen de prueba y suite de tests
 ```
 
