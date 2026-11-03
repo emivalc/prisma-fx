@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
           << "    AE_Effect_Global_OutFlags { " << kOutFlags << " },\n"
           << "    AE_Effect_Global_OutFlags_2 { " << kOutFlags2 << " },\n"
           << "    AE_Effect_Match_Name { \"" << matchName(i) << "\" },\n"
-          << "    AE_Reserved_Info { 0 },\n"
+          << "    AE_Reserved_Info { 8 },\n"
           << "    AE_Effect_Support_URL { \"https://github.com/emivalc/prisma-fx\" }\n"
           << "  }\n};\n";
         c << "PRISMA_AE_ENTRY(" << entry << ", \"" << i.id << "\")\n";

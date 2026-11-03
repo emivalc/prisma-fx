@@ -19,6 +19,7 @@
 #include "AE_EffectPixelFormat.h"
 #include "AE_Macros.h"
 #include "Param_Utils.h"
+#include "SPBasic.h"
 
 #include "ae/AeBridge.h"
 #include "ae/AeFlags.h"
@@ -114,8 +115,8 @@ PF_Err paramsSetup(const Effect& fx, PF_InData* in_data, PF_OutData* out_data) {
                 double x, y;
                 pointDefaultPercent(p, x, y);
                 def.param_type = PF_Param_POINT;
-                PF_STRCPY(def.name, name);
-                def.u.td.restrict_bounds = FALSE;
+                PF_STRNNCPY(def.PF_DEF_NAME, name, sizeof(def.PF_DEF_NAME));
+                def.u.td.restrict_bounds = false;
                 def.u.td.x_value = def.u.td.x_dephault = FLOAT2FIX(x);
                 def.u.td.y_value = def.u.td.y_dephault = FLOAT2FIX(y);
                 def.uu.id = paramId(k);
@@ -166,10 +167,12 @@ PF_Err readParams(const Effect& fx, PF_InData* in_data, ParamValues& v, float& p
                     out = {def.u.cd.value.red / 255.0, def.u.cd.value.green / 255.0, def.u.cd.value.blue / 255.0};
                     break;
                 case ParamType::Point: {
-                    // Point values are layer pixels at full resolution.
+                    // AE hands point values in layer pixels already scaled by
+                    // the downsample factor (see the SDK's CCU and Shifter).
+                    Frame f = frameOf(in_data);
                     double nx, ny;
-                    pointFromLayer(FIX_2_FLOAT(def.u.td.x_value), FIX_2_FLOAT(def.u.td.y_value), in_data->width,
-                                   in_data->height, nx, ny);
+                    pointFromLayer(FIX_2_FLOAT(def.u.td.x_value), FIX_2_FLOAT(def.u.td.y_value), f.width, f.height,
+                                   nx, ny);
                     out = {nx, ny};
                     break;
                 }
@@ -185,7 +188,6 @@ PF_Err readParams(const Effect& fx, PF_InData* in_data, ParamValues& v, float& p
 struct PreRender {
     ParamValues params;
     float progress = 0;
-    LRect inRect, toRect, outRect;
     bool haveTo = false;
 };
 
@@ -211,25 +213,22 @@ PF_Err preRender(const Effect& fx, PF_InData* in_data, PF_PreRenderExtra* extra)
     LRect request = intersect(fromPF(extra->input->output_request.rect), layer);
     PF_RenderRequest req = extra->input->output_request;
     req.rect = toPF(inputNeeded(fx, pre->params, request, f));
-    req.preserve_rgb_of_zero_alpha = TRUE;
+    req.preserve_rgb_of_zero_alpha = true;
 
     PF_CheckoutResult in;
     err = extra->cb->checkout_layer(in_data->effect_ref, 0, kInputCheckout, &req, in_data->current_time,
                                     in_data->time_step, in_data->time_scale, &in);
     if (err) return err;
-    pre->inRect = fromPF(in.result_rect);
     if (fx.info().transition) {
         PF_CheckoutResult to;
         err = extra->cb->checkout_layer(in_data->effect_ref, 2, kToCheckout, &req, in_data->current_time,
                                         in_data->time_step, in_data->time_scale, &to);
         if (err) return err;
-        pre->toRect = fromPF(to.result_rect);
-        pre->haveTo = !pre->toRect.empty();
+        pre->haveTo = !fromPF(to.result_rect).empty();
     }
-    pre->outRect = request;
     extra->output->result_rect = toPF(request);
     extra->output->max_result_rect = toPF(layer);
-    extra->output->solid = FALSE;
+    extra->output->solid = false;
     return PF_Err_NONE;
 }
 
@@ -250,14 +249,15 @@ PF_Err pixelDepth(PF_InData* in_data, PF_EffectWorld* w, Depth& d) {
     return PF_Err_NONE;
 }
 
-World worldOf(PF_EffectWorld* w, const LRect& placedAt, Depth d) {
+// SmartFX checkouts carry their position in the layer in origin_x/origin_y.
+World worldOf(PF_EffectWorld* w, Depth d) {
     World o;
     o.data = w->data;
     o.rowBytes = long(w->rowbytes);
     o.width = int(w->width);
     o.height = int(w->height);
-    o.left = placedAt.left;
-    o.top = placedAt.top;
+    o.left = int(w->origin_x);
+    o.top = int(w->origin_y);
     o.depth = d;
     return o;
 }
@@ -276,12 +276,9 @@ PF_Err smartRender(const Effect& fx, PF_InData* in_data, PF_SmartRenderExtra* ex
     err = pixelDepth(in_data, outW, d);
     if (err) return err;
     Frame f = frameOf(in_data);
-    // The output world starts at the result rect promised in pre-render.
-    World out = worldOf(outW, pre->outRect, d);
-    World in;
-    if (inW) in = worldOf(inW, pre->inRect, d);
-    World to;
-    if (toW) to = worldOf(toW, pre->toRect, d);
+    World out = worldOf(outW, d), in, to;
+    if (inW) in = worldOf(inW, d);
+    if (toW) to = worldOf(toW, d);
     try {
         render(fx, pre->params, in, toW ? &to : nullptr, out, f, pre->progress);
     } catch (const std::bad_alloc&) {

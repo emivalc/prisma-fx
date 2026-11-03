@@ -7,7 +7,7 @@ Los mismos efectos de Prisma FX funcionan también como plugin nativo de After E
 Primera versión. El puente que no depende del SDK (`src/ae/AeBridge.cpp`) tiene sus propios tests. Esos tests renderizan los 53 efectos con buffers como los de AE (ARGB, filas de arriba abajo, 8/16/32 bits, por tiles y a media resolución) y comprueban que el resultado coincide con el render directo. La parte que habla con el SDK (`src/ae/AePlugin.cpp`) se compila solo cuando el SDK está disponible y todavía hay que probarla dentro de After Effects.
 
 Hay que confirmar en AE dos cosas:
-- **Controles de punto.** El puente asume que AE da los puntos en píxeles de la capa a resolución completa. Si a resolución Half o Quarter el centro de un efecto (Zoom Blur, Lens Flare…) se desplaza, el fallo está en `pointFromLayer` de `AePlugin.cpp`.
+- **Controles de punto.** Según los ejemplos del SDK (CCU, Shifter), AE da los puntos en píxeles de la capa ya escalados por la resolución de previsualización. Si a resolución Half o Quarter el centro de un efecto (Zoom Blur, Lens Flare…) se desplaza, el fallo está en `pointFromLayer` de `AePlugin.cpp`.
 - **Capas recortadas o ampliadas por otros efectos.** El puente toma la capa como el rectángulo `0,0 – ancho,alto`.
 
 ## Cómo aparece en AE

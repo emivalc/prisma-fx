@@ -91,10 +91,14 @@ if(PRISMA_AE_SDK)
     target_compile_options(PrismaFX_AE PRIVATE -O3)
     set_target_properties(PrismaFX_AE PROPERTIES BUNDLE TRUE BUNDLE_EXTENSION plugin
       MACOSX_BUNDLE_INFO_PLIST "${AE_GEN}/Info.plist")
+    set(AE_REZ_SYSROOT "")
+    if(CMAKE_OSX_SYSROOT)
+      set(AE_REZ_SYSROOT -isysroot "${CMAKE_OSX_SYSROOT}")
+    endif()
     add_custom_command(TARGET PrismaFX_AE POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_BUNDLE_CONTENT_DIR:PrismaFX_AE>/Resources"
       COMMAND xcrun Rez -o "$<TARGET_BUNDLE_CONTENT_DIR:PrismaFX_AE>/Resources/PrismaFX.rsrc" -useDF
-        -d AE_OS_MAC -d __MACH__ -i "${AE_HEADERS}" -i "${AE_RESOURCES}" -arch arm64 -arch x86_64
+        -d AE_OS_MAC -d __MACH__ ${AE_REZ_SYSROOT} -i "${AE_HEADERS}" -i "${AE_RESOURCES}" -arch arm64 -arch x86_64
         "${AE_GEN}/PrismaFX_PiPL.r"
       COMMENT "Compiling the PiPL resource")
   endif()
